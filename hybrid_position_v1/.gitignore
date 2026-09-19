@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+state/
+results/features.csv
+results/predictions.csv
+results/positions.csv
+work/

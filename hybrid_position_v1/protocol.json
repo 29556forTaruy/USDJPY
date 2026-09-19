@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "protocol_id": "usdjpy-hybrid-position-v1",
+  "registered_before_first_backtest": true,
+  "registered_date": "2026-09-20",
+  "purpose": "Research-only daily USDJPY forecasts and divergence-based shadow positions combining the frozen quarterly macro anchor with an audited fear-and-greed core, moving averages, and prior-year pivots.",
+  "execution": {
+    "mode": "shadow_only",
+    "automatic_orders": false,
+    "feature_cutoff": "completed_daily_close_t",
+    "earliest_execution": "next_tradable_time_after_close_t",
+    "historical_fill_assumption": "position formed after close t is applied to close-to-close return t to t+1",
+    "warning": "Historical fills are semi-strict and are not equivalent to an executable 09:40 JST quote backtest."
+  },
+  "sources": {
+    "macro_protocol": "accuracy_v2/protocol.json",
+    "macro_history": "accuracy_v2/results/features_and_forecasts.csv",
+    "fear_repo": "https://github.com/29556forTaruy/forex-fear-and-greed",
+    "fear_repo_owner_allowlist": ["29556forTaruy"],
+    "fear_seed_path": "data/seed/dataset_USDJPY.parquet",
+    "ohlc_ticker": "USDJPY=X",
+    "historical_quality": "current-file history; not a point-in-time vintage archive"
+  },
+  "fear_and_greed": {
+    "published_headline_role": "diagnostic_only",
+    "strict_name": "audited_market_fng",
+    "strict_components": ["momentum", "strength", "realized_vol", "risk_regime"],
+    "strict_component_weights": {
+      "momentum": 0.18,
+      "strength": 0.12,
+      "realized_vol": 0.18,
+      "risk_regime": 0.14
+    },
+    "excluded_from_strict": {
+      "rate_diff": "historical series are not fully point-in-time and overlap with the macro model",
+      "cot": "source audit found contract ambiguity and publication-date look-ahead",
+      "breadth": "source implementation can count missing crosses as non-rising"
+    },
+    "normalization_window": 252,
+    "normalization_min_periods": 60,
+    "signal_lag_business_days": 0,
+    "execution_lag_business_days": 1
+  },
+  "features": {
+    "moving_average_windows": [20, 50, 125, 200],
+    "ma_representation": [
+      "log_price_ma20",
+      "log_ma20_ma50",
+      "log_ma50_ma125",
+      "log_ma125_ma200"
+    ],
+    "fear_features": ["fear_level", "fear_change_5d", "fear_coverage"],
+    "pivot_formula": "classic_prior_calendar_year_ohlc",
+    "pivot_levels": ["p", "r1", "s1", "r2", "s2"],
+    "pivot_features": ["pivot_center_distance", "pivot_support_distance", "pivot_resistance_distance"],
+    "macro_features": ["macro_gap_h", "macro_available"],
+    "regime_features": ["trend_score", "vol_ratio"],
+    "distance_scale": "daily realized volatility with trailing-252 20th-percentile floor",
+    "feature_clip": 3.0,
+    "annualized_vol_window": 20,
+    "vol_floor_window": 252,
+    "vol_floor_quantile": 0.20
+  },
+  "prediction": {
+    "horizons_business_days": [1, 5, 20],
+    "primary_horizon": 20,
+    "target": "future log return divided by contemporaneous daily volatility times sqrt(h)",
+    "candidates": [
+      "random_walk",
+      "macro_ridge",
+      "technical_ridge",
+      "hybrid_ridge"
+    ],
+    "ridge_alphas": [1.0, 10.0, 100.0],
+    "alpha_selection": "purged expanding inner time-series CV with one-standard-error rule; ties choose larger alpha",
+    "inner_folds": 3,
+    "embargo_business_days": 5,
+    "minimum_training_rows": 756,
+    "maximum_training_rows": 1260,
+    "coefficient_update": "first available trading day of each calendar month",
+    "prediction_clip_sigma": 2.5,
+    "ensemble": {
+      "prior_weights": {
+        "random_walk": 0.40,
+        "macro_ridge": 0.20,
+        "technical_ridge": 0.20,
+        "hybrid_ridge": 0.20
+      },
+      "rolling_scored_predictions": 252,
+      "minimum_scored_before_dynamic_weights": 252,
+      "inverse_mse_shrinkage_to_prior": 0.50,
+      "random_walk_weight_floor": 0.35,
+      "nonnegative": true,
+      "sum_to_one": true
+    }
+  },
+  "position": {
+    "horizon_weights": {"1": 0.20, "5": 0.40, "20": 0.40},
+    "minimum_agreeing_horizons": 2,
+    "entry_band_sigma_after_cost": 0.20,
+    "exit_band_sigma_after_cost": 0.10,
+    "strength_full_scale_sigma": 0.80,
+    "annual_vol_target": 0.05,
+    "maximum_absolute_position": 1.0,
+    "maximum_daily_position_change": 0.25,
+    "regime_caps": {
+      "trend": 1.00,
+      "range": 0.60,
+      "overheat": 0.50,
+      "stress": 0.35
+    },
+    "stress_vol_ratio": 1.50,
+    "fear_threshold": 24.0,
+    "greed_threshold": 76.0,
+    "pivot_proximity_5d_vol_fraction": 0.25,
+    "pivot_cap_when_blocked": 0.50,
+    "base_one_way_cost_bps": 2.5,
+    "stress_one_way_cost_bps": 5.0,
+    "drawdown_half_cap": 0.04,
+    "drawdown_flat_and_review": 0.06,
+    "daily_loss_cap": 0.01,
+    "post_loss_cap": 0.25,
+    "post_loss_days": 2
+  },
+  "backtest": {
+    "walk_forward": true,
+    "training_window": "rolling",
+    "purge_unrealized_targets": true,
+    "newey_west_lag_by_horizon": {"1": 0, "5": 4, "20": 19},
+    "costs_included": true,
+    "comparators": ["random_walk", "macro_only", "technical_only", "ma_cross", "risk_matched_always_long"],
+    "ablations": ["without_fng", "without_ma", "without_pivot", "without_macro"]
+  },
+  "promotion": {
+    "historical_backtest_can_auto_promote": false,
+    "minimum_forward_days": 504,
+    "preferred_forward_days": 756,
+    "minimum_target_quarters": 8,
+    "minimum_closed_trades": 60,
+    "minimum_nonoverlap_samples": {"1": 400, "5": 80, "20": 24},
+    "rmse_improvement_min_pct": {"5": 5.0, "20": 5.0},
+    "mae_must_improve": true,
+    "one_day_rmse_max_deterioration_pct": 2.0,
+    "both_halves_nonnegative_improvement": true,
+    "holm_adjusted_dm_p_max": 0.10,
+    "net_sharpe_min": 0.50,
+    "profit_factor_min": 1.20,
+    "max_drawdown_max": 0.06,
+    "stress_cost_cumulative_pnl_min": 0.0,
+    "human_review_required": true
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "agreeing_horizons": 3,
+  "annualized_realized_vol": 0.1106613544989247,
+  "audited_market_fng": 21.967495580456763,
+  "cap_reason": "entry_band",
+  "earliest_execution": "next tradable time after the completed market-date close",
+  "effective_daily_vol": 0.006971010089278891,
+  "fear_coverage": 1.0,
+  "forecast_change_pct": {
+    "1": 0.03173524955575324,
+    "20": 0.7270663605180916,
+    "5": 0.09074909890214311
+  },
+  "forecast_prices": {
+    "1": 156.90477405233494,
+    "20": 157.99543563673038,
+    "5": 156.99734022320615
+  },
+  "macro_anchor": 163.061915891,
+  "macro_divergence_pct": 3.957107093843115,
+  "market_date": "2026-09-19",
+  "normalized_forecasts": {
+    "1": 0.04551738497602917,
+    "20": 0.23237494494763428,
+    "5": 0.05819217948379149
+  },
+  "prior_year_pivots": {
+    "p": 151.72066243499998,
+    "r1": 163.54932657899997,
+    "r2": 170.685658773,
+    "s1": 144.58433024099995,
+    "s2": 132.75566609699996
+  },
+  "regime": "overheat",
+  "schema_version": 1,
+  "signal_sigma_after_cost": 0.10853476373953426,
+  "source_bundle_sha256": "b9da238355e85556fb76e2e9f290eb013e1ee6b80e2848253229d4de8311bf86",
+  "source_commit": "665efb9c4f9e14519044798ce98e105756fcb1d7",
+  "source_headline_fng_diagnostic": 33.8532874305,
+  "spot": 156.854995728,
+  "target_position": 0.0,
+  "warning": "research-only shadow signal; no order is authorized"
+}
