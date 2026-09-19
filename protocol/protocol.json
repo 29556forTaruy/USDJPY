@@ -1,0 +1,72 @@
+{
+  "schema_version": 4,
+  "protocol_name": "USDJPY accuracy V2 audited realtime-aligned anti-overfit protocol",
+  "supersedes_protocol_sha256": "f39d7e4f16ff65eec6ee6ce49cd64f8f6eb467731c961d41b1c356d19d60be3e",
+  "change_reason": "Before any V2 live forecast, correct candidate-specific training samples, use Newey-West lag 1 for partially overlapping forecast windows, and freeze the historical foundation; earlier registration-only ledgers are retained.",
+  "registered_date_jst": "2026-09-19",
+  "evaluation_start_quarter": "2020Q1",
+  "training_start_quarter": "2014Q4",
+  "actual_availability_lag_days": 10,
+  "final_shadow_model": "rw_floor_ensemble",
+  "candidate_order": [
+    "random_walk",
+    "fair_value_convergence",
+    "change_ridge",
+    "policy_3m_ridge",
+    "dynamic_two_factor",
+    "rw_floor_ensemble"
+  ],
+  "diagnostic_only_models": [
+    "two_year_spread_ridge_semi_strict"
+  ],
+  "candidate_definitions": {
+    "fair_value_convergence": "origin_spot * exp(lambda * log(rolling_fair_value / origin_spot)); lambda selected from a fixed grid using available past targets only",
+    "change_ridge": "target log return on rolling log fair-value gap, delta Tankan and delta 10-year spread",
+    "policy_3m_ridge": "target log return on rolling log fair-value gap, delta Tankan and delta US-Japan 3-month interbank spread from ALFRED vintages",
+    "two_year_spread_ridge_semi_strict": "diagnostic target log return on rolling log fair-value gap, delta Tankan and delta US-Japan 2-year government yield spread; Japan history is current-file data and cannot support a historical realtime claim",
+    "dynamic_two_factor": "discount-factor Kalman model of target level using origin 10-year spread and Tankan; one shared discount parameter",
+    "rw_floor_ensemble": "nonnegative ensemble of the five valid models, shrunk toward fixed prior weights and retaining at least 35% random walk"
+  },
+  "fixed_hyperparameters": {
+    "convergence_lambda_grid": [0.0, 0.25, 0.5, 0.75, 1.0],
+    "ridge_alpha_grid": [1.0, 10.0, 100.0],
+    "kalman_discount_grid": [1.0, 0.99, 0.97, 0.94],
+    "inner_validation_window": 8,
+    "ensemble_error_window": 12,
+    "ensemble_prior_weights": [0.5, 0.15, 0.15, 0.1, 0.1],
+    "ensemble_prior_shrinkage": 0.5,
+    "random_walk_weight_floor": 0.35,
+    "minimum_model_training_rows": 8,
+    "minimum_fair_value_training_rows": 12,
+    "dm_hac_lag": 1
+  },
+  "promotion_screen": {
+    "minimum_oos_rows": 20,
+    "minimum_rmse_improvement_pct": 5.0,
+    "require_mae_improvement": true,
+    "require_nonnegative_half_period_improvements": true,
+    "maximum_holm_adjusted_dm_p": 0.1,
+    "historical_screen_never_promotes_automatically": true
+  },
+  "information_rules": {
+    "market_cutoff": "calendar day before Tankan release for ALFRED date-granular vintages",
+    "policy_3m_alignment": "latest common observation date present in both US and Japan ALFRED snapshots by the market cutoff",
+    "policy_3m_max_staleness_days": 180,
+    "actual_target_available": "quarter end plus 10 calendar days",
+    "inner_validation_purge": "for every pseudo-origin, train only on rows whose target_available_date is on or before that pseudo-origin release date",
+    "historical_outcome_grade": "frozen final quarter-end DEXJPUS observations, availability-gated but not point-in-time outcome vintages; archived vintage comparison found no differing values in the covered sample",
+    "missing_values": "fail closed; never interpolate",
+    "mof_two_year_historical_grade": "semi_strict_diagnostic_only",
+    "mof_two_year_prospective_time": "09:40 JST or later"
+  },
+  "anti_overfit_rules": [
+    "The log-return target and log fair-value gap were fixed before viewing this protocol version's strict OOS results.",
+    "No hyperparameter or feature grid may be expanded after reading V2 OOS results under this protocol version.",
+    "Every hyperparameter choice is made with outcomes available before that forecast origin only.",
+    "Inner time-series validation applies the same target-availability rule at every pseudo-origin; positional adjacency is never treated as availability.",
+    "Each candidate uses only the past rows required by its declared feature set; unrelated feature availability cannot narrow its training sample.",
+    "The diagnostic two-year model is excluded from the ensemble and all historical promotion claims.",
+    "The final shadow model is the predeclared RW-floor ensemble, not the ex-post lowest-RMSE component.",
+    "Any protocol change creates a new version and a new forward ledger."
+  ]
+}
