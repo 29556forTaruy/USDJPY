@@ -1,0 +1,28 @@
+{
+  "year": 2026,
+  "observations": 15,
+  "first_date": "2026-09-01",
+  "last_date": "2026-09-19",
+  "start_price": 159.746994019,
+  "end_price": 156.854995728,
+  "spot_change_pct": -1.8103616338821515,
+  "audited_fng_mean": 24.983325547338104,
+  "audited_fng_min": 13.75238431224843,
+  "audited_fng_max": 51.89061805827454,
+  "source_headline_fng_mean": 34.75539240502667,
+  "macro_divergence_start_pct": 2.075107511322405,
+  "macro_divergence_end_pct": 3.957107093843115,
+  "forecast_price_1d_end": 156.90477405233494,
+  "forecast_price_5d_end": 156.99734022320615,
+  "forecast_price_20d_end": 157.99543563673038,
+  "position_nonzero_days": 0,
+  "mean_position": 0.0,
+  "max_abs_position": 0.0,
+  "net_return_sum_pct": 0.0,
+  "regimes": {
+    "overheat": 10,
+    "range": 3,
+    "trend": 2
+  },
+  "all_horizons_positive_days": 10
+}
