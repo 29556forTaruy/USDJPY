@@ -25,6 +25,7 @@
 ## ドキュメント
 
 - [進捗ログ](PROGRESS.md)
+- [初心者向けモデル説明書（PDF）](docs/usdjpy_accuracy_v2_beginner_guide_ja.pdf)
 - [実装・検証報告書](docs/usdjpy_accuracy_v2_report_ja.md)
 - [モデル別評価指標](results/model_metrics.csv)
 - [バックテスト概要](results/summary.json)
